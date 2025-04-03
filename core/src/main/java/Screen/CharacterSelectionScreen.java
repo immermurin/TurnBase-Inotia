@@ -46,17 +46,26 @@ public class CharacterSelectionScreen implements Screen {
         table.setFillParent(true);
         stage.addActor(table);
 
-        // Add game title label using BitmapFont
+        // Load a BitmapFont properly
         BitmapFont font = new BitmapFont();
-        Label titleLabel = new Label("Select Your Character", new Label.LabelStyle(font, Color.WHITE));
-        titleLabel.setFontScale(2);
+        font.getData().setScale(2); // Optional: Adjust font size
+
+        Label.LabelStyle labelStyle = new Label.LabelStyle();
+        labelStyle.font = font;
+        labelStyle.fontColor = Color.WHITE; // Optional: Set font color
+
+        Label titleLabel = new Label("Select Your Character", labelStyle);
         table.add(titleLabel).pad(10).row();
 
         Table charTable = new Table();
         ScrollPane scrollPane = new ScrollPane(charTable);
 
+        // Define a reusable TextButtonStyle with the font
+        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+        buttonStyle.font = font;
+
         for (String character : characters) {
-            TextButton charButton = new TextButton(character, new TextButton.TextButtonStyle());
+            TextButton charButton = new TextButton(character, buttonStyle);
             charButton.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
@@ -70,7 +79,7 @@ public class CharacterSelectionScreen implements Screen {
         table.add(scrollPane).width(400).height(200).pad(10).row();
 
         // Randomize button
-        TextButton randomButton = new TextButton("Randomize", new TextButton.TextButtonStyle());
+        TextButton randomButton = new TextButton("Randomize", buttonStyle);
         randomButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -80,12 +89,12 @@ public class CharacterSelectionScreen implements Screen {
         });
 
         // Next button
-        TextButton nextButton = new TextButton("Next", new TextButton.TextButtonStyle());
+        TextButton nextButton = new TextButton("Next", buttonStyle);
         nextButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (selectedCharacter != null) {
-                    game.switchToMapSelection(selectedCharacter); // Pass selected character to MapSelection
+                    game.switchToMapSelection(selectedCharacter);
                 } else {
                     System.out.println("Please select a character first.");
                 }
@@ -95,6 +104,7 @@ public class CharacterSelectionScreen implements Screen {
         table.add(randomButton).pad(10);
         table.add(nextButton).pad(10).row();
     }
+
 
     @Override
     public void render(float delta) {
