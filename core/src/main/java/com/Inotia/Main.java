@@ -2,6 +2,7 @@ package com.Inotia;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import Screen.*;
@@ -16,6 +17,14 @@ public class Main extends Game {
         this.setScreen(new TitleScreen(this));
     }
 
+    @Override
+    public void setScreen(Screen screen) {
+        if (this.getScreen() != null) {
+            this.getScreen().dispose();
+        }
+        super.setScreen(screen);
+    }
+
     public void switchToMainMenu() {
         this.setScreen(new MainMenuScreen(this));
     }
@@ -24,21 +33,11 @@ public class Main extends Game {
         this.setScreen(new CharacterSelectionScreen(this));
     }
 
-    public void switchToMapSelection() {
-        this.setScreen(new MapSelection(this));
-    }
-
-    public void switchToAboutScreen() {
-        this.setScreen(new AboutScreen(this));
-    }
-
-    public void switchToGameInfoScreen() {
-        this.setScreen(new GameInfoScreen(this));
-    }
-
-    public void startGame(String selectedMap) {
-        System.out.println("Starting game on map: " + selectedMap);
-        // Implement game start logic here
+    public void startGame(String selectedMap, String selectedCharacter) {
+        System.out.println("Starting game with character " + selectedCharacter +
+            " on map: " + selectedMap);
+        // Here you would normally start your actual game screen
+        // this.setScreen(new GameScreen(this, selectedCharacter, selectedMap));
     }
 
     @Override
@@ -53,17 +52,7 @@ public class Main extends Game {
     }
 
     public void switchToMapSelection(String selectedCharacter) {
-        // Logic to handle transitioning to the MapSelection screen with the selected character
         System.out.println("Switching to MapSelection with character: " + selectedCharacter);
-
-        // Assuming you have a MapSelection screen setup:
-        Main game = new Main();
-        MapSelection mapSelectionScreen = new MapSelection(game);
-
-        // Optionally, pass the selected character to the MapSelection screen if needed:
-        mapSelectionScreen.setSelectedCharacter(selectedCharacter);
-
-        // Transition to the MapSelection screen
-        game.setScreen(mapSelectionScreen);
+        this.setScreen(new MapSelection(this, selectedCharacter));
     }
 }

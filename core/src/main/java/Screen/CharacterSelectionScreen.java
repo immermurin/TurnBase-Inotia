@@ -9,14 +9,16 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.*;
 import com.Inotia.Main;
 
+import java.util.Random;
+
 public class CharacterSelectionScreen implements Screen {
     private final Main game;
     private SpriteBatch spriteBatch;
     private Texture background;
     private OrthographicCamera camera;
     private Viewport viewport;
-
     private Stage stage;
+
     private String selectedCharacter;
     private final String[] characters = {
         "Bambi", "Barathrum", "Chichi", "Danzo", "Davion", "Entity",
@@ -28,12 +30,11 @@ public class CharacterSelectionScreen implements Screen {
         spriteBatch = new SpriteBatch();
 
         camera = new OrthographicCamera();
-        viewport = new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
+        viewport = new FitViewport(800, 600, camera);
         viewport.apply();
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
 
         background = new Texture("background/menubackground.png");
-        background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         stage = new Stage(viewport, spriteBatch);
         Gdx.input.setInputProcessor(stage);
@@ -46,23 +47,22 @@ public class CharacterSelectionScreen implements Screen {
         table.setFillParent(true);
         stage.addActor(table);
 
-        // Load a BitmapFont properly
+        // Load font
         BitmapFont font = new BitmapFont();
-        font.getData().setScale(2); // Optional: Adjust font size
+        font.getData().setScale(2);
 
-        Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.font = font;
-        labelStyle.fontColor = Color.WHITE; // Optional: Set font color
-
+        // Label style
+        Label.LabelStyle labelStyle = new Label.LabelStyle(font, Color.WHITE);
         Label titleLabel = new Label("Select Your Character", labelStyle);
         table.add(titleLabel).pad(10).row();
 
-        Table charTable = new Table();
-        ScrollPane scrollPane = new ScrollPane(charTable);
-
-        // Define a reusable TextButtonStyle with the font
+        // TextButton Style
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
         buttonStyle.font = font;
+
+        // Character Selection
+        Table charTable = new Table();
+        ScrollPane scrollPane = new ScrollPane(charTable);
 
         for (String character : characters) {
             TextButton charButton = new TextButton(character, buttonStyle);
@@ -78,23 +78,23 @@ public class CharacterSelectionScreen implements Screen {
 
         table.add(scrollPane).width(400).height(200).pad(10).row();
 
-        // Randomize button
+        // Randomize Button
         TextButton randomButton = new TextButton("Randomize", buttonStyle);
         randomButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                selectedCharacter = characters[(int) (Math.random() * characters.length)];
+                selectedCharacter = characters[new Random().nextInt(characters.length)];
                 System.out.println("Randomly Selected Character: " + selectedCharacter);
             }
         });
 
-        // Next button
+        // Next Button
         TextButton nextButton = new TextButton("Next", buttonStyle);
         nextButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (selectedCharacter != null) {
-                    game.switchToMapSelection(selectedCharacter);
+                    ((Main) game).switchToMapSelection(selectedCharacter);
                 } else {
                     System.out.println("Please select a character first.");
                 }
@@ -104,7 +104,6 @@ public class CharacterSelectionScreen implements Screen {
         table.add(randomButton).pad(10);
         table.add(nextButton).pad(10).row();
     }
-
 
     @Override
     public void render(float delta) {

@@ -5,9 +5,9 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.utils.*;
-import com.Inotia.Main;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.*;
+import com.Inotia.Main;
 
 public class MapSelection implements Screen {
     private final Main game;
@@ -15,23 +15,24 @@ public class MapSelection implements Screen {
     private Texture background;
     private OrthographicCamera camera;
     private Viewport viewport;
-
     private Stage stage;
+
     private String selectedMap;
     private final String[] maps = {"Forest", "Dungeon", "Castle"};
     private String selectedCharacter;
 
-    public MapSelection(Main game) {
+    // Constructor accepts selectedCharacter as a parameter
+    public MapSelection(Main game, String selectedCharacter) {
         this.game = game;
+        this.selectedCharacter = selectedCharacter; // Store selected character
         spriteBatch = new SpriteBatch();
 
         camera = new OrthographicCamera();
-        viewport = new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
+        viewport = new FitViewport(800, 600, camera);
         viewport.apply();
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
 
         background = new Texture("background/menubackground.png");
-        background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
         stage = new Stage(viewport, spriteBatch);
         Gdx.input.setInputProcessor(stage);
@@ -44,14 +45,22 @@ public class MapSelection implements Screen {
         table.setFillParent(true);
         stage.addActor(table);
 
-        // Add game title label using BitmapFont
+        // Load font
         BitmapFont font = new BitmapFont();
-        Label titleLabel = new Label("Select a Map", new Label.LabelStyle(font, Color.WHITE));
+        font.getData().setScale(2);
+
+        // Label style
+        Label.LabelStyle labelStyle = new Label.LabelStyle(font, Color.WHITE);
+        Label titleLabel = new Label("Select a Map", labelStyle);
         table.add(titleLabel).pad(10).row();
 
-        // Create and add buttons for each map
+        // TextButton Style
+        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+        buttonStyle.font = font;
+
+        // Map Selection Buttons
         for (String map : maps) {
-            TextButton mapButton = new TextButton(map, new TextButton.TextButtonStyle());
+            TextButton mapButton = new TextButton(map, buttonStyle);
             mapButton.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
@@ -62,18 +71,21 @@ public class MapSelection implements Screen {
             table.add(mapButton).pad(10).row();
         }
 
-        // Add Next button
-        TextButton nextButton = new TextButton("Next", new TextButton.TextButtonStyle());
+        // Next Button - Updated
+        TextButton nextButton = new TextButton("Next", buttonStyle);
         nextButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (selectedMap != null) {
-                    game.startGame(selectedMap);
-                } else {
+                if (selectedMap != null && selectedCharacter != null) {
+                    game.startGame(selectedMap, selectedCharacter);
+                } else if (selectedMap == null) {
                     System.out.println("Please select a map first.");
+                } else {
+                    System.out.println("Character selection missing.");
                 }
             }
         });
+
 
         table.add(nextButton).pad(10).row();
     }
@@ -111,6 +123,6 @@ public class MapSelection implements Screen {
 
     public void setSelectedCharacter(String selectedCharacter) {
         this.selectedCharacter = selectedCharacter;
-        System.out.println("Character selected for this map selection: " + selectedCharacter);
+        System.out.println("Selected Character for Map Selection: " + selectedCharacter);
     }
 }
