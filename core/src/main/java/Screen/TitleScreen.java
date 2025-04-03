@@ -16,49 +16,57 @@ public class TitleScreen implements Screen {
     private ShapeRenderer shapeRenderer;
     private float progress = 0;
     private static final float LOADING_SPEED = 30f;
+    private boolean switching = false;
 
     public TitleScreen(Main game) {
         this.game = game;
         System.out.println("TitleScreen initialized.");
 
-        spriteBatch = new SpriteBatch();
-        shapeRenderer = new ShapeRenderer();
-
-        // Set up the camera and viewport
         camera = new OrthographicCamera();
         viewport = new StretchViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
         viewport.apply();
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
 
+        spriteBatch = new SpriteBatch();
+        shapeRenderer = new ShapeRenderer();
+        shapeRenderer.setAutoShapeType(true);
+        shapeRenderer.setProjectionMatrix(camera.combined);
+
         try {
-            background = new Texture("background/INOTIA-TITLE SCREEN.png");
+            // Ensure the background texture is loaded correctly
+            background = new Texture(Gdx.files.internal("background/back.png"));
             background.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         } catch (Exception e) {
             System.err.println("Error loading background texture.");
             e.printStackTrace();
-            background = null;
+            background = null;  // If the background fails, it will be null
         }
     }
 
     @Override
     public void render(float delta) {
+        if (switching) return; // Skip rendering if we're switching screens
+
         progress += LOADING_SPEED * delta;
-        if (progress >= 100) {
+        if (progress >= 100 && !switching) {
             progress = 100;
-            game.switchToMainMenu();
+            switching = true;
+            // Delay the screen switch until after rendering completes
+            Gdx.app.postRunnable(() -> game.switchToMainMenu());
         }
 
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        // Clear the screen and update the camera
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         camera.update();
 
-        spriteBatch.setProjectionMatrix(camera.combined);
+        // Draw the background if available
         spriteBatch.begin();
         if (background != null) {
             spriteBatch.draw(background, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         }
         spriteBatch.end();
 
-        // Draw loading bar below the frame
+        // Draw loading bar
         drawLoadingBar();
     }
 
@@ -66,9 +74,10 @@ public class TitleScreen implements Screen {
         float barWidth = 500;
         float barHeight = 25;
         float barX = (Gdx.graphics.getWidth() - barWidth) / 2;
-        float barY = 5; // Lower position near the bottom
+        float barY = 5; // Position near the bottom
         float cornerRadius = 10;
 
+        shapeRenderer.setProjectionMatrix(camera.combined);
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
@@ -101,9 +110,15 @@ public class TitleScreen implements Screen {
     @Override
     public void dispose() {
         System.out.println("Disposing TitleScreen resources.");
-        spriteBatch.dispose();
-        shapeRenderer.dispose();
-        if (background != null) background.dispose();
+        if (spriteBatch != null) {
+            spriteBatch.dispose();
+        }
+        if (shapeRenderer != null) {
+            shapeRenderer.dispose();
+        }
+        if (background != null) {
+            background.dispose();
+        }
     }
 
     @Override public void show() {}
